@@ -6,25 +6,47 @@ set guifont=consolas:h12
 set foldmethod=indent
 set foldlevel=99
 set splitright
-set guioptions-=r guioptions-=L
+set guioptions+=c " use console dialogs, not popups
+set guioptions-=m " disable menubar
+set guioptions-=T " disable toolbar
+set guioptions-=r " disable scrollbar right
+set guioptions-=L " disable scrollbar left
 set wildmenu
+set wildignore+=*.pyc
+set wildignore+=**/node_modules/**
+set wildignore+=**\\node_modules\\**
+set wildignore+=**/__pycache__/**
+set wildignore+=**\\__pycache__\\**
+set wildignore+=*.swp
+set wildignore+=*.*~
+
+" to disable audio/visual error bells 
+" terminal vim
+" set noerrorbells visualbell t_vb=
+" Gvim
+set visualbell t_vb=
+
+set tabstop=4
+set nobackup
+set nowritebackup
+set noswapfile
 set foldlevelstart=0
 " }}}
 
 " environment manipulation {{{
 " change temp-file default directories so Vim has permission to write
-let $TMP="c:/users/e018462/my documents/vim_temp"
-let $TEMP="c:/users/e018462/my documents/vim_temp"
+let $TMP="c:/users/e018462/Documents/vim_temp"
+let $TEMP="c:/users/e018462/Documents/vim_temp"
 set directory=.,$TMP,$TEMP
 
 " set PYSRC env variable, not sure I'll use this
-let $PYSRC="c:/users/e018462/my documents/py_src"
+let $PYSRC="c:/users/e018462/Documents/py_src"
 
 " set SRC env variable, this is where I'll keep my git repos
-let $SRC = "c:/users/e018462/documents/src"
+let $SRC = "c:/users/e018462/Documents/src"
 
-" change working directory to $HOME
-" cd $SRC 
+" change working directory to $SRC
+cd $SRC
 " }}}
 
 "auto-commands {{{
@@ -45,9 +67,23 @@ augroup onPyBuffsOpen
         \ set expandtab     |
         \ set autoindent    |
         \ set nowrap        |
-        \ :nnoremap $ mlviw"*yo?^\s*\(def\\|\)\s*\zs<esc>"*p$a\ze\s*\(=\\|(\)<esc>dd:@"<cr> |
+        \ :nnoremap $ :execute "normal! mlviw\"*y"<cr>:execute "normal!" .  '?^\s*\(def\\|\)\s*\zs' . @* . '\ze\s*\(=\\|(\)' . "\r"<cr> |
         \ set fileformat=unix
 augroup END
+" explanation of the nnoremap to $ in the above autocmd
+" for python buffers:
+"   ml          - set a marker at the cursor position 
+"                 and save to l
+"   viw         - select current word
+"   \"*y        - yank selected word to *
+"   ?^\s*       - look backwards for whitespace starting
+"                 a line 
+"   \(def\\|\)  - followed by optional literal 'def'
+"   \s*\zs      - followed by more whitespace, then begin 
+"                 selection 
+"   . @* .      - concatenate with the text in *
+"   \ze\s*      - end selection, followed by more whitespace
+"   \(=\\|(\)'  - followed by an '=' or '('
 
 " configure rexx
 augroup onRexxBuffsOpen
@@ -68,7 +104,8 @@ augroup onCobolBuffsOpen
     autocmd BufNewFile,BufRead *.cbl
         \ set filetype=cobol      |
         \ set nowrap              |
-        \ let cobol_legacy_code=1 
+        \ let cobol_legacy_code=1 |
+        \ :nnoremap $ :execute "normal! mlviw\"*y"<cr>:execute "normal!" . '?^\(\d\{6\}\\|\s\{6\}\)\s*\(\d\d\\|\)\s*\zs' . @* . '\ze[ \.]' . "\r"<cr> 
     autocmd FileType cobol set sw=4 sts=4 et sta tw=72 
     "    \ set nowrap
     "    \ vertical resize 72   |
@@ -82,7 +119,7 @@ augroup END
 " configure vimscript
 augroup onVimScriptBuffsOpen
     autocmd!
-    autocmd filetype vim set foldmethod=marker
+    autocmd filetype vim set foldmethod=marker foldlevel=0
 augroup END
 
 " send enter key press to NERDTree (I think?)
@@ -145,12 +182,18 @@ execute pathogen#infect()
 "   size vsplits equally 
  	nnoremap <leader>eq <c-w>=  	
 "   misc
-        nnoremap H 0
-        nnoremap L $
+        noremap H 0
+        noremap L $
+	nnoremap <leader>st  :source %<cr>
         nnoremap <leader>svq :source $myvimrc<cr><c-w>q
-        nnoremap <leader>sv :source $myvimrc<cr>
-        nnoremap <leader>ev :vnew<cr>:e $myvimrc<cr>
+        nnoremap <leader>sv  :source $myvimrc<cr>
+        nnoremap <leader>ev  :e $myvimrc<cr>
+        nnoremap <leader>evw :vnew<cr>:e $myvimrc<cr>
         nnoremap <space> za
+	nnoremap + mpO<esc>`p
+	nnoremap = mpo<esc>`p
+	nnoremap - mpjdd<esc>`p
+	nnoremap _ mpkdd<esc>`p
         inoremap jk <esc>
         inoremap JK <esc>
         inoremap jK <esc>
@@ -162,6 +205,8 @@ execute pathogen#infect()
         nmap     ; kzt
         nmap     , jzt
         nnoremap <C-n> :call NumberToggle()<cr>
+        nnoremap <leader>f  :set foldmethod=marker<cr>:set foldlevel=0<cr>
+        nnoremap <leader>uf :set foldlevel=99<cr>
         "nmap    oo o<Esc>k
         "nmap    Oo O<Esc>j
         "nmap    OO O<Esc>j
