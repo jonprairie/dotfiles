@@ -1,4 +1,14 @@
 " plugins {{{
+  " bufkill         - sane quit buffer commands
+  " commentary      - simple comment-toggling
+  " ctrlp           - fuzzy file finder
+  " dbext           - relational database interface
+  " easymotion      - easy, precise motions
+  " minibufexpl     - simple buffer listing bar
+  " moveIt_moveIt   - move lines of code easily
+  " nerdtree        - intuitive file explorer
+  " surround        - wrap text in various delimiters
+  " todo.txt        - syntax highlighting for todo.txt files
     execute pathogen#infect()
 "}}}
 
@@ -62,12 +72,25 @@
 " }}}
 
 " environment manipulation {{{
+
     let vim_env_rc = expand('~') . 'env_profile.vim'
     try 
         exe "source " . vim_env_rc
     catch
         echom vim_env_rc . " not found"
     endtry
+
+" }}}
+
+" dbext connection details {{{
+
+    let vim_dbext_rc = expand('~') . 'dbext_profile.vim'
+    try
+        exe "source " . vim_dbext_rc
+    catch
+        echom vim_dbext_rc . " not found"
+    endtry
+
 " }}}
 
 "auto-commands {{{
@@ -80,6 +103,14 @@
             autocmd GUIEnter * set visualbell t_vb=
         augroup END
     endif
+
+  " Configure text files
+  " ====================
+    augroup onTextBuffsOpen
+        autocmd!
+        autocmd BufNewFile,BufRead *.txt,*.md,*.markdown,*.log
+            \ setlocal wrap
+    augroup END
 
   " Configure python
   " ================
@@ -175,7 +206,7 @@
     noremap             <C-K>   <C-W><C-K>
     noremap             <C-L>   <C-W><C-L>
     noremap             <C-H>   <C-W><C-H>
- 	nnoremap <leader>eq <C-W>=  	            
+    noremap <leader>eq  <C-W>=  	            
 
   " Buffers
   " =======
@@ -184,27 +215,28 @@
     
   " CtrlP and NERDTree
   " ==================
-    nmap <C-p><C-p> :exe "CtrlP $SRC"<CR>
-    nmap <C-p><C-o> :CtrlPBuffer<CR>
-    nmap <C-p><C-i> :CtrlPMRU<CR>
-    map  <C-\>      :NERDTreeToggle<CR>
+    noremap <C-p><C-p> :exe "CtrlP $SRC"<CR>
+    noremap <C-p><C-o> :CtrlPBuffer<CR>
+    noremap <C-p><C-i> :CtrlPMRU<CR>
+    noremap <C-\>      :NERDTreeToggle<CR>
 
   " ISPF-like key mappings
   " ======================
-    nnoremap <F2>    :tabnew<CR> 
-    map      <S-F2>  :vnew<CR>
-    nnoremap <F3>    :BD<CR>
-    nnoremap <S-F3>  <C-w>q
-    map      <F5>    :bprev<CR>
-    map      <F6>    :bnext<CR>
-    nnoremap <F7>    <C-u>
-    nnoremap <S-F7>  gg
-    nnoremap <S-F8>  G
-    nnoremap <F8>    <C-d>
-    nnoremap <F10>   zh
-    nnoremap <F11>   zl
-    nnoremap <S-F10> zH
-    nnoremap <S-F11> zL
+    noremap <F2>    :tabnew<CR> 
+    noremap <S-F2>  :vnew<CR>
+    noremap <F3>    :BD<CR>
+    noremap <S-F3>  <C-w>q
+    noremap <F5>    :bprev<CR>
+    noremap <F6>    :bnext<CR>
+    noremap <F7>    <C-u>
+    noremap <S-F7>  gg
+    noremap <S-F8>  G
+    noremap <F8>    <C-d>
+    noremap <F9>    :b#<cr>
+    noremap <F10>   zh
+    noremap <F11>   zl
+    noremap <S-F10> zH
+    noremap <S-F11> zL
 
   " Better motions
   " ==============
@@ -212,6 +244,10 @@
     noremap L $
     noremap ; kzt
     noremap , jzt
+    noremap j gj
+    noremap k gk
+    noremap ` '
+    noremap ' `
 
   " Escape key
   " ==========
@@ -230,29 +266,33 @@
     nnoremap = mpo<esc>`p
     nnoremap - mpjdd<esc>`p
     nnoremap _ mpkdd<esc>`p
+    noremap vv V
 
   " File editing/sourcing
   " =====================
-    nnoremap <leader>st  :source %<cr>
-    nnoremap <leader>svq :source $myvimrc<cr><c-w>q
-    nnoremap <leader>sv  :source $myvimrc<cr>
-    nnoremap <leader>ev  :e $myvimrc<cr>
-    nnoremap <leader>evw :vnew<cr>:e $myvimrc<cr>
-    nnoremap <leader>qq  :call SwitchProject(proj_dir)<cr>
-    nnoremap <leader>qw  :call SwitchProject(home_dir)<cr>
+    noremap <leader>st  :source %<cr>
+    noremap <leader>svq :source $myvimrc<cr><c-w>q
+    noremap <leader>sv  :source $myvimrc<cr>
+    noremap <leader>ev  :e $myvimrc<cr>
+    noremap <leader>evw :vnew<cr>:e $myvimrc<cr>
+    noremap <leader>qq  :call SwitchProject(proj_dir)<cr>
+    noremap <leader>qw  :call SwitchProject(home_dir)<cr>
 
   " Miscellaneous
   " =============
-    nnoremap <C-n> :call NumberToggle()<cr>
-    nnoremap <space> za
-    nnoremap <leader>f  :set foldmethod=marker<cr>:set foldlevel=0<cr>
-    nnoremap <leader>uf :set foldlevel=99<cr>
+    noremap <space> za
+    noremap <leader>f   :set foldmethod=marker<cr>:set foldlevel=0<cr>
+    noremap <leader>uf  :set foldlevel=99<cr>
+    noremap <leader>dbp :call SetDB2EnvProd()<cr>
+    noremap <leader>dbu :call SetDB2EnvUser()<cr>
+    noremap <leader>dbt :call SetDB2EnvTest()<cr>
+    noremap / /\c\v
 
     "   ë = <A-k>
-    nmap     ë       :%s/.\{72\}\zs.\{1,\}//gc<cr>
+    nnoremap     ë       :%s/.\{72\}\zs.\{1,\}//gc<cr>
 
     "   What is the current syntax highlighting group?
-    map <F12> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">" . " FG:" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"fg#") . " BG:" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"bg#")<CR>
+    nnoremap <F12> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">" . " FG:" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"fg#") . " BG:" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"bg#")<CR>
 " }}}
 
 " custom functions {{{
@@ -292,23 +332,9 @@
   " in Vim, NERDTree and CtrlP
     function! SwitchProject(proj)
         let $SRC = a:proj
-        cd &SRC
+        cd $SRC
         NERDTree $SRC
         NERDTreeToggle
     endfunction
 
-  " substitute operator
-    function! SubstituteSelection()
-        let x = 5
-    endfunction
-
-" }}}
-
-" dbext connection details {{{
-    let vim_dbext_rc = expand('~') . 'dbext_profile.vim'
-    try
-        exe "source " . vim_dbext_rc
-    catch
-        echom vim_dbext_rc . " not found"
-    endtry
 " }}}
